@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mumbai Property Listings</title>
+<style>
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --line: #dbe3ee;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --good-bg: #ecfdf5;
+  --good-line: #a7f3d0;
+  --bad-bg: #fef2f2;
+  --bad-line: #fecaca;
+  --warn-bg: #fff7ed;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.header {
+  background: linear-gradient(135deg, #ffffff, #eef4ff);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  margin-bottom: 18px;
+}
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+.sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 12px;
+}
+.kpi {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.kpi .label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.kpi .value {
+  font-size: 24px;
+  font-weight: 700;
+}
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+.toolbar {
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfdff;
+}
+.toolbar-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  align-items: end;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+input[type="text"], input[type="number"], select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: var(--text);
+  font-size: 14px;
+}
+.toolbar-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+button {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+button.primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.table-wrap {
+  overflow: auto;
+  max-height: 72vh;
+}
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1500px;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #f8fbff;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid #edf2f7;
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 13px;
+  white-space: nowrap;
+}
+thead th:last-child, tbody td:last-child { border-right: none; }
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+th.sortable .sort-indicator {
+  margin-left: 6px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+tbody td {
+  border-bottom: 1px solid #eef2f7;
+  border-right: 1px solid #f1f5f9;
+  padding: 10px;
+  vertical-align: top;
+  font-size: 14px;
+  background: white;
+}
+tbody tr:hover td {
+  background: #fafcff;
+}
+tbody tr.shortlisted td {
+  background: var(--good-bg);
+}
+tbody tr.discarded td {
+  background: var(--bad-bg);
+  color: #6b7280;
+}
+tbody tr.discarded a {
+  color: #6b7280;
+}
+.small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.status-select {
+  min-width: 130px;
+}
+.map-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.map-link:hover {
+  text-decoration: underline;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+}
+.footer-note {
+  padding: 12px 16px 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+@media (max-width: 1200px) {
+  .toolbar-grid { grid-template-columns: 1fr 1fr; }
+  .kpis { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+}
+@media (max-width: 700px) {
+  .container { padding: 12px; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Mumbai Property Listings</h1>
+    <div class="sub">Standalone interactive table built from the latest workbook. Sort any column, filter listings, click Google Maps links, and mark each property as shortlisted or discarded.</div>
+    <div class="kpis">
+      <div class="kpi"><div class="label">Visible listings</div><div class="value" id="kpiVisible">0</div></div>
+      <div class="kpi"><div class="label">Shortlisted</div><div class="value" id="kpiShortlisted">0</div></div>
+      <div class="kpi"><div class="label">Discarded</div><div class="value" id="kpiDiscarded">0</div></div>
+      <div class="kpi"><div class="label">Unreviewed</div><div class="value" id="kpiBlank">0</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="toolbar-grid">
+        <div class="field">
+          <label for="searchBox">Search</label>
+          <input id="searchBox" type="text" placeholder="Search building, location, configuration, notes..." />
+        </div>
+        <div class="field">
+          <label for="locationFilter">Location</label>
+          <select id="locationFilter"><option value="">All</option></select>
+        </div>
+        <div class="field">
+          <label for="statusFilter">Status</label>
+          <select id="statusFilter">
+            <option value="">All</option>
+            <option value="Shortlisted">Shortlisted</option>
+            <option value="Discarded">Discarded</option>
+            <option value="Blank">Blank</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="minPrice">Min Price (Cr)</label>
+          <input id="minPrice" type="number" step="0.01" placeholder="e.g. 8" />
+        </div>
+        <div class="field">
+          <label for="maxPrice">Max Price (Cr)</label>
+          <input id="maxPrice" type="number" step="0.01" placeholder="e.g. 15" />
+        </div>
+        <div class="field">
+          <label for="minArea">Min Area (Sqft)</label>
+          <input id="minArea" type="number" step="1" placeholder="e.g. 1200" />
+        </div>
+        <div class="field">
+          <label for="maxArea">Max Area (Sqft)</label>
+          <input id="maxArea" type="number" step="1" placeholder="e.g. 2000" />
+        </div>
+      </div>
+      <div class="toolbar-actions">
+        <button id="clearFiltersBtn">Clear filters</button>
+        <button id="resetStatusesBtn">Reset all statuses</button>
+        <button id="exportStatusesBtn">Export statuses</button>
+        <button id="importStatusesBtn">Import statuses</button>
+        <input id="importFileInput" type="file" accept="application/json" style="display:none" />
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="listingsTable">
+        <thead>
+          <tr>
+            <th class="sortable" data-key="status">Status <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="building">Building Name <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="location">Location <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="configuration">Configuration <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="areaNum">Area (Sqft) <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="floorView">Floor & View <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="parking">Parking <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="priceCr">Price (Cr) <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="sqftRate">₹ / Sqft <span class="sort-indicator"></span></th>
+            <th class="sortable" data-key="conditions">Conditions <span class="sort-indicator"></span></th>
+            <th>Google Maps</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="footer-note">
+      Area values are shown as the leading numeric square footage only. Where the original area contained an additional “+ …” component, that extra portion is preserved in the Conditions column.
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "mumbai_property_listing_statuses_v1";
+const rawListings = [{"id": "c49c64dc9de2", "index": 1, "building": "Banoo Mansion", "location": "Kemps' Corner, Cumballa Hill Lane", "configuration": "3 BHK (Bedroom Hall Kitchen), 3 Bath + SRB (Servant Room & Bathroom)", "areaDisplay": "1700", "areaNum": 1700.0, "floorView": "Higher Floor; Sea View", "parking": "2 parking", "priceCr": 8.0, "priceText": "8.0", "conditions": "", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Banoo%20Mansion%2C%20Kemps%20Corner%2C%20Cumballa%20Hill%2C%20Mumbai", "sqftRate": 47059, "status": ""}, {"id": "56e91c7a4fbe", "index": 2, "building": "Sky Scraper", "location": "Breach Candy", "configuration": "2.5 BHK (Bedroom Hall Kitchen), 2 Bath + SB (Servant Bathroom)", "areaDisplay": "1095", "areaNum": 1095.0, "floorView": "Sea View", "parking": "1 Stilt Parking", "priceCr": 9.5, "priceText": "9.50 Nego (Negotiable)", "conditions": "Well done up", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Skyscraper%2C%20Bhulabhai%20Desai%20Marg%2C%20Breach%20Candy%2C%20Mumbai", "sqftRate": 86758, "status": ""}, {"id": "1814b8498300", "index": 3, "building": "Fariyas", "location": "Kemps Corner", "configuration": "3 BHK (Bedroom Hall Kitchen)", "areaDisplay": "1425", "areaNum": 1425.0, "floorView": "Higher floor; Open views", "parking": "1 reserved car park", "priceCr": 9.5, "priceText": "9.5", "conditions": "Needs work; Good natural light; cross ventilation", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Fariyas%20Building%2C%20August%20Kranti%20Road%2C%20Kemps%20Corner%2C%20Mumbai", "sqftRate": 66667, "status": ""}, {"id": "c18911a44cdc", "index": 4, "building": "BELLE VIEW", "location": "BREACH CANDY", "configuration": "2 BHK (Bedroom Hall Kitchen) 4 Bath", "areaDisplay": "1219", "areaNum": 1219.0, "floorView": "", "parking": "", "priceCr": 8.0, "priceText": "8.0", "conditions": "Furnished", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Belle%20View%2C%2085%20Bhulabhai%20Desai%20Road%2C%20Breach%20Candy%2C%20Mumbai", "sqftRate": 65628, "status": ""}, {"id": "dd90338b94f3", "index": 5, "building": "Mona Lisa", "location": "Breach Candy", "configuration": "3 BHK (Bedroom Hall Kitchen) 3 Bath", "areaDisplay": "1120", "areaNum": 1120.0, "floorView": "", "parking": "1 Parking", "priceCr": 7.0, "priceText": "7.0", "conditions": "Furnished", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Mona%20Lisa%2C%20Bomanji%20Petit%20Marg%2C%20Breach%20Candy%2C%20Mumbai", "sqftRate": 62500, "status": ""}, {"id": "8e911715a756", "index": 6, "building": "Lotus court", "location": "Worli", "configuration": "4 BHK (Bedroom Hall Kitchen)", "areaDisplay": "1525", "areaNum": 1525.0, "floorView": "", "parking": "2 car parking", "priceCr": 8.5, "priceText": "8.50 Nego (Negotiable)", "conditions": "", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Lotus%20Court%2C%20Dr%20Annie%20Besant%20Road%2C%20Worli%2C%20Mumbai", "sqftRate": 55738, "status": ""}, {"id": "27bb3c578315", "index": 7, "building": "Walchand Terraces", "location": "Tardeo (Opposite AC Market)", "configuration": "3 BHK (Bedroom Hall Kitchen) + 2 Balconies; 3 en-suite bathrooms", "areaDisplay": "1490", "areaNum": 1490.0, "floorView": "Beautiful Peaceful Views Facing Willingdon Golf Course", "parking": "1.0", "priceCr": 7.5, "priceText": "7.5", "conditions": "", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Walchand%20Terraces%2C%20Tardeo%20Road%2C%20Tulsiwadi%2C%20Tardeo%2C%20Mumbai", "sqftRate": 50336, "status": ""}, {"id": "9fc97e368bd3", "index": 8, "building": "Sushant Bldg", "location": "Narayan Dhabolkar Road", "configuration": "3 BHK (Bedroom Hall Kitchen) + 4 Bath", "areaDisplay": "2000", "areaNum": 2000.0, "floorView": "Full Sea View", "parking": "", "priceCr": 10.0, "priceText": "10.00 Nego (Negotiable)", "conditions": "Flat needs renovation", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Sushant%20Building%2C%20Bhagwandas%20Indrajit%20Road%2C%20Off%20Narayan%20Dabholkar%20Road%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 50000, "status": ""}, {"id": "1a9486e51f66", "index": 9, "building": "SHYAM NIWAS", "location": "Breach Candy", "configuration": "3 BHK (Bedroom Hall Kitchen), 3 Bath + SB (Servant Bathroom)", "areaDisplay": "1705", "areaNum": 1705.0, "floorView": "FF (First Floor)", "parking": "Large Garage", "priceCr": 11.25, "priceText": "11.25 Nego (Negotiable)", "conditions": "Well Done Up; Quiet by lane; Temple in compound", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Shyam%20Niwas%2C%20Bhulabhai%20Desai%20Marg%2C%20Opposite%20Breach%20Candy%20Hospital%2C%20Mumbai", "sqftRate": 65982, "status": ""}, {"id": "636379ce25f4", "index": 10, "building": "Cambridge Court", "location": "Pedder Road", "configuration": "3 BHK (Bedroom Hall Kitchen), 3 Bath + ST (Staff Toilet)", "areaDisplay": "1750", "areaNum": 1750.0, "floorView": "Old World Charm", "parking": "2 Car Park", "priceCr": 12.0, "priceText": "12.0", "conditions": "", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Cambridge%20Court%2C%20Pedder%20Road%2C%20Mumbai", "sqftRate": 68571, "status": ""}, {"id": "57ebe87fefc3", "index": 11, "building": "GULMARG", "location": "Nepeansea Road", "configuration": "3 BHK (Bedroom Hall Kitchen), 3 Bath + SB (Servant Bathroom)", "areaDisplay": "1300", "areaNum": 1300.0, "floorView": "SF (Second Floor)", "parking": "Parking as per Society Rule", "priceCr": 12.5, "priceText": "12.5", "conditions": "+  2700 C (Carpet Area) Garden", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Gulmarg%2C%20Nepean%20Sea%20Road%2C%20near%20Priyadarshini%20Park%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 96154, "status": ""}, {"id": "3e15763468a0", "index": 12, "building": "Triveni Bldg", "location": "Walkeshwar", "configuration": "3 BHK (Bedroom Hall Kitchen) 4 Bath + Separate Large Dining Room + Living Room", "areaDisplay": "2250", "areaNum": 2250.0, "floorView": "Sea View", "parking": "Possibility of 2 Car Parks", "priceCr": 14.0, "priceText": "14.00 Slightly Nego (Negotiable)", "conditions": "Well Furnished; Fantastic Interiors; Veg Society", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Triveni%2C%2066%20Walkeshwar%20Road%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 62222, "status": ""}, {"id": "b6e104b5e396", "index": 13, "building": "Anita", "location": "Malabar Hill", "configuration": "3 BHK (Bedroom Hall Kitchen) 3 Bath + Study Room + SB (Servant Bathroom)", "areaDisplay": "1725", "areaNum": 1725.0, "floorView": "", "parking": "1 Garage + 1 car outside", "priceCr": 14.5, "priceText": "14.50 Final", "conditions": "Walk In Condition; Building has pool; 2 gardens; Gym; Security", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Anita%20Building%2C%201/E%20Mount%20Pleasant%20Road%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 84058, "status": ""}, {"id": "ecc161f2b2f1", "index": 14, "building": "Pushpak", "location": "Altamount Road", "configuration": "4 BHK (Bedroom Hall Kitchen), 4 Bath + SB (Servant Bathroom)", "areaDisplay": "1700", "areaNum": 1700.0, "floorView": "Sea View", "parking": "2 Car Parks", "priceCr": 16.0, "priceText": "16.0", "conditions": "Building has Gym; Mandated (Keys with us)", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Pushpak%20Apartment%2C%2031%20Altamount%20Road%2C%20Mumbai", "sqftRate": 94118, "status": ""}, {"id": "7fc862176a65", "index": 15, "building": "Kalpavruksha Residency (Duplex)", "location": "Kemps Corner", "configuration": "4 BHK (Bedroom Hall Kitchen) 5 Bath + Living Room + TV Room + 2 SB (Servant Bathroom) + Balcony", "areaDisplay": "2400", "areaNum": 2400.0, "floorView": "Spectacular Sea View & Coastal View", "parking": "2 Covered Car Parks", "priceCr": 16.5, "priceText": "16.50 Marginally Nego (Negotiable)", "conditions": "Bare Shell", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Kalpavruksha%20Residency%2C%20August%20Kranti%20Road%2C%20Kemps%20Corner%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 68750, "status": ""}, {"id": "ca0530bb5b41", "index": 16, "building": "Fionika", "location": "Walkeshwar", "configuration": "4 BHK (Bedroom Hall Kitchen) + SR (Servant Room)/SB (Servant Bathroom)", "areaDisplay": "2000", "areaNum": 2000.0, "floorView": "Unrestricted Sea View", "parking": "1 Large Garage (2 Cars) + 1 Open", "priceCr": 20.0, "priceText": "20.0", "conditions": "", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Fionika%2C%2059B%20Walkeshwar%20Road%2C%20Opp%20Sital%20Baug%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 100000, "status": ""}, {"id": "493b5e46329b", "index": 17, "building": "Ritu Apt", "location": "Malabar Hill", "configuration": "2 BHK (Bedroom Hall Kitchen), 2 Bath + SB (Servant Bathroom)", "areaDisplay": "1045", "areaNum": 1045.0, "floorView": "FF (First Floor)", "parking": "1 Car Park", "priceCr": 9.25, "priceText": "9.25", "conditions": "Cosmo Society", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Ritu%20Apartments%2C%20Walkeshwar%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 88517, "status": ""}, {"id": "c92dffb7feb3", "index": 18, "building": "SEAGULL APTS", "location": "Carmichael Road", "configuration": "2 BHK (Bedroom Hall Kitchen) + 2 Bath + SRB (Servant Room & Bathroom) + Balcony", "areaDisplay": "1365", "areaNum": 1365.0, "floorView": "SF (Second Floor); Sea & Greenery Views", "parking": "1 Car Park", "priceCr": 10.5, "priceText": "10.50 Nego (Negotiable)", "conditions": "Fantastic Interiors; Ready to move in", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Seagull%20Apartments%2C%20Opposite%20Japanese%20Consulate%2C%20Carmichael%20Road%2C%20Mumbai", "sqftRate": 76923, "status": ""}, {"id": "9e8267fd866b", "index": 19, "building": "Shiv Tirth", "location": "Haji Ali", "configuration": "3 BHK (Bedroom Hall Kitchen) 3 Bath + Balcony", "areaDisplay": "1900", "areaNum": 1900.0, "floorView": "", "parking": "1 Garage + 1 open", "priceCr": 10.0, "priceText": "10.00 Nego (Negotiable)", "conditions": "", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Shiv%20Tirth%2C%20Pedder%20Road%2C%20near%20Haji%20Ali%2C%20Mumbai", "sqftRate": 52632, "status": ""}, {"id": "8d4be3cf3da1", "index": 20, "building": "Matru Ashish", "location": "Nepeansea Road", "configuration": "3 BHK (Bedroom Hall Kitchen) + 3 Bathroom", "areaDisplay": "1500", "areaNum": 1500.0, "floorView": "Higher Floor; Sea View", "parking": "1 Car Parking", "priceCr": 10.5, "priceText": "10.50 Nego (Negotiable)", "conditions": "Furnished With New Interior", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Matru%20Ashish%20Apartment%2C%2039%20Nepean%20Sea%20Road%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 70000, "status": ""}, {"id": "5d21a315fdd5", "index": 21, "building": "Matru Ashish", "location": "Nepeansea Road", "configuration": "3 BHK (Bedroom Hall Kitchen) + 3 Bathroom", "areaDisplay": "1500", "areaNum": 1500.0, "floorView": "Higher Floor; Sea View", "parking": "1 Car Parking", "priceCr": 10.5, "priceText": "10.50 Nego (Negotiable)", "conditions": "Furnished With New Interior", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Matru%20Ashish%20Apartment%2C%2039%20Nepean%20Sea%20Road%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 70000, "status": ""}, {"id": "644b5014fb7b", "index": 22, "building": "Sagar Mahal", "location": "Walkeshwar", "configuration": "2 BHK (Bedroom Hall Kitchen) + 2 Bath", "areaDisplay": "1255", "areaNum": 1255.0, "floorView": "Lower Floor; Sea View; Garden", "parking": "Valet", "priceCr": 11.0, "priceText": "11.00 Nego (Negotiable)", "conditions": "Badminton Court; Veg society; Mandated", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Sagar%20Mahal%2C%20Walkeshwar%20Road%2C%20Opp%20Lodha%20Malabar%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 87649, "status": ""}, {"id": "6c9f8f9aa485", "index": 23, "building": "LODHA SEA MONT", "location": "Walkeshwar", "configuration": "2 BHK (Bedroom Hall Kitchen) + 3 Bath", "areaDisplay": "975", "areaNum": 975.0, "floorView": "Sea View", "parking": "2 Car Parks", "priceCr": 10.5, "priceText": "10.50 Nego (Negotiable)", "conditions": "Building has Amenities", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Lodha%20Seamont%2C%20Walkeshwar%20Road%2C%20Next%20to%20Governor%27s%20Residence%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 107692, "status": ""}, {"id": "4613df4fb37e", "index": 24, "building": "Sushant Bldg", "location": "Narayan Dhabolkar Road", "configuration": "3 BHK (Bedroom Hall Kitchen) + 4 Bath", "areaDisplay": "2000", "areaNum": 2000.0, "floorView": "Full Sea View", "parking": "", "priceCr": 10.0, "priceText": "10.00 Nego (Negotiable)", "conditions": "Flat needs renovation", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Sushant%20Building%2C%20Bhagwandas%20Indrajit%20Road%2C%20Off%20Narayan%20Dabholkar%20Road%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 50000, "status": ""}, {"id": "58a1105bfafa", "index": 25, "building": "SANIDHYA", "location": "Walkeshwar", "configuration": "3 BHK (Bedroom Hall Kitchen) + 3 Bath + SB (Servant Bathroom) on the floor", "areaDisplay": "1250", "areaNum": 1250.0, "floorView": "FF (First Floor)", "parking": "1 Car Park", "priceCr": 12.0, "priceText": "12.00 Nego (Negotiable)", "conditions": "Veg Society", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Sanidhya%2C%20Walkeshwar%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 96000, "status": ""}, {"id": "e17ea4e908a4", "index": 26, "building": "KONARK EMPRESS", "location": "Worli", "configuration": "3 BHK (Bedroom Hall Kitchen) + 3 Bath + SR (Servant Room)/SB (Servant Bathroom) On Same Floor", "areaDisplay": "1650", "areaNum": 1650.0, "floorView": "Building has a Garden", "parking": "2 Car Parks", "priceCr": 9.5, "priceText": "9.50 Nego (Negotiable)", "conditions": "Fully Furnished; Well Done Up", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Konark%20Empress%2C%20Worli%20Naka%2C%20Mumbai", "sqftRate": 57576, "status": ""}, {"id": "a2c5452c8f16", "index": 27, "building": "Cambridge Court", "location": "Pedder Road", "configuration": "3 BHK (Bedroom Hall Kitchen), 3 Bath + ST (Staff Toilet)", "areaDisplay": "1750", "areaNum": 1750.0, "floorView": "Old World Charm", "parking": "2 Car Park", "priceCr": 12.0, "priceText": "12.0", "conditions": "", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Cambridge%20Court%2C%20Pedder%20Road%2C%20Mumbai", "sqftRate": 68571, "status": ""}, {"id": "f901bf8aa983", "index": 28, "building": "GULMARG", "location": "Nepeansea Road", "configuration": "3 BHK (Bedroom Hall Kitchen), 3 Bath + SB (Servant Bathroom)", "areaDisplay": "1300", "areaNum": 1300.0, "floorView": "SF (Second Floor)", "parking": "Parking as per Society Rule", "priceCr": 12.5, "priceText": "12.5", "conditions": "+  2700 C (Carpet Area) Garden", "googleMaps": "https://www.google.com/maps/search/?api=1&query=Gulmarg%2C%20Nepean%20Sea%20Road%2C%20near%20Priyadarshini%20Park%2C%20Malabar%20Hill%2C%20Mumbai", "sqftRate": 96154, "status": ""}];
+let sortState = { key: "priceCr", direction: "asc" };
+let listings = rawListings.map(item => ({ ...item }));
+
+function loadStatuses() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    listings = rawListings.map(item => ({ ...item, status: saved[item.id] || "" }));
+  } catch (e) {
+    listings = rawListings.map(item => ({ ...item }));
+  }
+}
+
+function saveStatuses() {
+  const out = {};
+  listings.forEach(item => {
+    if (item.status) out[item.id] = item.status;
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(out));
+}
+
+function indianNumberFormat(value) {
+  if (value === null || value === undefined || value === "" || Number.isNaN(value)) return "—";
+  return Number(value).toLocaleString("en-IN");
+}
+
+function priceFormat(value) {
+  if (value === null || value === undefined || value === "" || Number.isNaN(value)) return "—";
+  return Number(value).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+function statusRank(status) {
+  if (status === "Shortlisted") return 0;
+  if (status === "") return 1;
+  if (status === "Discarded") return 2;
+  return 3;
+}
+
+function compareValues(a, b, key, direction) {
+  let av = a[key];
+  let bv = b[key];
+
+  if (key === "status") {
+    av = statusRank(a.status || "");
+    bv = statusRank(b.status || "");
+  }
+
+  const aNull = av === null || av === undefined || av === "";
+  const bNull = bv === null || bv === undefined || bv === "";
+  if (aNull && bNull) return 0;
+  if (aNull) return 1;
+  if (bNull) return -1;
+
+  let result = 0;
+  if (typeof av === "number" && typeof bv === "number") {
+    result = av - bv;
+  } else {
+    result = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: "base" });
+  }
+  return direction === "asc" ? result : -result;
+}
+
+function applyFilters(items) {
+  const search = document.getElementById("searchBox").value.trim().toLowerCase();
+  const location = document.getElementById("locationFilter").value;
+  const status = document.getElementById("statusFilter").value;
+  const minPrice = parseFloat(document.getElementById("minPrice").value);
+  const maxPrice = parseFloat(document.getElementById("maxPrice").value);
+  const minArea = parseFloat(document.getElementById("minArea").value);
+  const maxArea = parseFloat(document.getElementById("maxArea").value);
+
+  return items.filter(item => {
+    const haystack = [
+      item.building, item.location, item.configuration, item.floorView,
+      item.parking, item.conditions, item.priceText
+    ].join(" ").toLowerCase();
+
+    if (search && !haystack.includes(search)) return false;
+    if (location && item.location !== location) return false;
+    if (status) {
+      if (status === "Blank" && item.status !== "") return false;
+      if (status !== "Blank" && item.status !== status) return false;
+    }
+    if (!Number.isNaN(minPrice) && (item.priceCr === null || item.priceCr < minPrice)) return false;
+    if (!Number.isNaN(maxPrice) && (item.priceCr === null || item.priceCr > maxPrice)) return false;
+    if (!Number.isNaN(minArea) && (item.areaNum === null || item.areaNum < minArea)) return false;
+    if (!Number.isNaN(maxArea) && (item.areaNum === null || item.areaNum > maxArea)) return false;
+    return true;
+  });
+}
+
+function updateKpis(filtered) {
+  const shortlisted = listings.filter(x => x.status === "Shortlisted").length;
+  const discarded = listings.filter(x => x.status === "Discarded").length;
+  const blank = listings.length - shortlisted - discarded;
+  document.getElementById("kpiVisible").textContent = filtered.length;
+  document.getElementById("kpiShortlisted").textContent = shortlisted;
+  document.getElementById("kpiDiscarded").textContent = discarded;
+  document.getElementById("kpiBlank").textContent = blank;
+}
+
+function render() {
+  const filtered = applyFilters(listings).sort((a, b) => compareValues(a, b, sortState.key, sortState.direction));
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+
+  filtered.forEach(item => {
+    const tr = document.createElement("tr");
+    if (item.status === "Shortlisted") tr.classList.add("shortlisted");
+    if (item.status === "Discarded") tr.classList.add("discarded");
+
+    tr.innerHTML = `
+      <td>
+        <select class="status-select" data-id="${item.id}">
+          <option value="" ${item.status === "" ? "selected" : ""}>—</option>
+          <option value="Shortlisted" ${item.status === "Shortlisted" ? "selected" : ""}>Shortlisted</option>
+          <option value="Discarded" ${item.status === "Discarded" ? "selected" : ""}>Discarded</option>
+        </select>
+      </td>
+      <td><strong>${escapeHtml(item.building)}</strong></td>
+      <td>${escapeHtml(item.location)}</td>
+      <td>${escapeHtml(item.configuration)}</td>
+      <td class="num">${item.areaNum !== null ? indianNumberFormat(item.areaNum) : "—"}</td>
+      <td>${item.floorView ? escapeHtml(item.floorView) : '<span class="small">—</span>'}</td>
+      <td>${item.parking ? escapeHtml(item.parking) : '<span class="small">—</span>'}</td>
+      <td class="num">${item.priceCr !== null ? priceFormat(item.priceCr) : "—"}</td>
+      <td class="num">${item.sqftRate !== null ? "₹ " + indianNumberFormat(item.sqftRate) : "—"}</td>
+      <td>${item.conditions ? escapeHtml(item.conditions) : '<span class="small">—</span>'}</td>
+      <td>${item.googleMaps ? `<a class="map-link" href="${escapeAttr(item.googleMaps)}" target="_blank" rel="noopener noreferrer">Open Map</a>` : '<span class="small">—</span>'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.querySelectorAll(".status-select").forEach(select => {
+    select.addEventListener("change", (e) => {
+      const row = listings.find(x => x.id === e.target.dataset.id);
+      if (!row) return;
+      row.status = e.target.value;
+      saveStatuses();
+      render();
+    });
+  });
+
+  updateSortIndicators();
+  updateKpis(filtered);
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll("th.sortable").forEach(th => {
+    const ind = th.querySelector(".sort-indicator");
+    ind.textContent = "";
+    if (th.dataset.key === sortState.key) {
+      ind.textContent = sortState.direction === "asc" ? "▲" : "▼";
+    }
+  });
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value);
+}
+
+function populateLocationFilter() {
+  const select = document.getElementById("locationFilter");
+  const locations = [...new Set(listings.map(x => x.location).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  locations.forEach(loc => {
+    const opt = document.createElement("option");
+    opt.value = loc;
+    opt.textContent = loc;
+    select.appendChild(opt);
+  });
+}
+
+function bindControls() {
+  document.querySelectorAll("th.sortable").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      if (sortState.key === key) {
+        sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
+      } else {
+        sortState.key = key;
+        sortState.direction = key === "status" ? "asc" : "asc";
+      }
+      render();
+    });
+  });
+
+  ["searchBox", "locationFilter", "statusFilter", "minPrice", "maxPrice", "minArea", "maxArea"].forEach(id => {
+    document.getElementById(id).addEventListener("input", render);
+    document.getElementById(id).addEventListener("change", render);
+  });
+
+  document.getElementById("clearFiltersBtn").addEventListener("click", () => {
+    document.getElementById("searchBox").value = "";
+    document.getElementById("locationFilter").value = "";
+    document.getElementById("statusFilter").value = "";
+    document.getElementById("minPrice").value = "";
+    document.getElementById("maxPrice").value = "";
+    document.getElementById("minArea").value = "";
+    document.getElementById("maxArea").value = "";
+    render();
+  });
+
+  document.getElementById("resetStatusesBtn").addEventListener("click", () => {
+    if (!confirm("Clear all shortlisted/discarded selections?")) return;
+    listings.forEach(item => item.status = "");
+    saveStatuses();
+    render();
+  });
+
+  document.getElementById("exportStatusesBtn").addEventListener("click", () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      statuses: Object.fromEntries(listings.filter(x => x.status).map(x => [x.id, x.status]))
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mumbai-property-statuses.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("importStatusesBtn").addEventListener("click", () => {
+    document.getElementById("importFileInput").click();
+  });
+
+  document.getElementById("importFileInput").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      const statuses = payload.statuses || payload;
+      listings.forEach(item => {
+        item.status = statuses[item.id] || "";
+      });
+      saveStatuses();
+      render();
+    } catch (err) {
+      alert("Could not import statuses JSON.");
+    } finally {
+      event.target.value = "";
+    }
+  });
+}
+
+loadStatuses();
+populateLocationFilter();
+bindControls();
+render();
+</script>
+</body>
+</html>
